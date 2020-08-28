@@ -1,5 +1,7 @@
 import RPi.GPIO as GPIO
 from tkinter import *
+from tkinter.filedialog import *
+from functools import partial
 import Keypad
 
 
@@ -15,32 +17,39 @@ colsPins = [19,15,13,11]        #connect to the column pinouts of the keypad
 keyToSoundDict = {}
 
 for key in keys:
-    keyToSoundDict[key] = ""
+    keyToSoundDict[key] = "N/A"
 
 class App:
+    global keyToSoundDict
+	
     def __init__(self, master):
         frame = Frame(master)
         frame.pack()
-        
+
+        self.keyToSoundStringVarDict = {}
         self.keyToBtnDict = {}
         self.keyToLblDict = {}
         x = 0 #horizontal pos on grid
         y = 0 #vertical pos on grid
+
         for key in keys:
-            self.keyToBtnDict[key] = Button(master, text="Btn " + key, command = self.getDirectory(key))
-            self.keyToBtnDict[key].grid(row = x, column = y)
+            self.keyToBtnDict[key] = Button(frame, text="Btn " + key, command = partial(self.getDirectory, key))
+            self.keyToBtnDict[key].grid(row = y, column = x)
+
             
-            self.keyToLblDict[key] = Label(frame, text=keyToSoundDict[key])
-            self.keyToBtnDict[key].grid(row = x+1, column = y)  
-                                   
-            x += 1
-            y += x%4==0 ? 1 : 0
             
-    def getDirectory(key):
-        dir = filedialog.askdirectory()
-        keyToSoundDict[key] = dir
-        self.keyToLblDict[key]["text"] = dir
-      
+            self.keyToLblDict[key] = Label(frame, textvariable = )
+            self.keyToLblDict[key].grid(row = y, column = x+1)  
+                  
+            x += 2
+            temp = y
+            y += 1 if x%8==0 else 0
+            x = 0 if temp!=y else x
+
+    def getDirectory(self, key):
+        dir = askopenfilename(title = "select a mp3 file", filetypes = [("mp3 files", "*.mp3")])
+        keyToSoundDict[key] = dir if dir else 'N/A'
+ 
 
 def loop():
     keypad = Keypad.Keypad(keys,rowsPins,colsPins,ROWS,COLS)  
@@ -52,7 +61,12 @@ def loop():
             
 if __name__ == '__main__':     #Program start from here
     print ("Program is starting ... ")
-    try:
+    """try:
         loop()
     except KeyboardInterrupt:  #When 'Ctrl+C' is pressed, exit the program. 
-        GPIO.cleanup()
+        GPIO.cleanup()"""
+
+    root = Tk()
+    root.wm_title('Soundboard')
+    app = App(root)
+    root.mainloop()
