@@ -36,9 +36,10 @@ class App:
             self.keyToBtnDict[key] = Button(frame, text="Btn " + key, command = partial(self.getDirectory, key))
             self.keyToBtnDict[key].grid(row = y, column = x)
 
+            self.keyToSoundStringVarDict[key] = StringVar()
+	    self.keyToSoundStringVarDict[key].set(keyToSoundDict[key])
             
-            
-            self.keyToLblDict[key] = Label(frame, textvariable = )
+            self.keyToLblDict[key] = Label(frame, textvariable = keyToSoundStringVarDict[key])
             self.keyToLblDict[key].grid(row = y, column = x+1)  
                   
             x += 2
@@ -49,6 +50,7 @@ class App:
     def getDirectory(self, key):
         dir = askopenfilename(title = "select a mp3 file", filetypes = [("mp3 files", "*.mp3")])
         keyToSoundDict[key] = dir if dir else 'N/A'
+	self.keyToSoundStringVarDict[key].set(keyToSoundDict[key])
  
 
 def loop():
