@@ -2,6 +2,7 @@ import RPi.GPIO as GPIO
 from tkinter import *
 from tkinter.filedialog import *
 from functools import partial
+from threading import Thread
 import Keypad
 
 
@@ -59,18 +60,22 @@ def loop():
         key = keypad.getKey()   
         if(key != keypad.NULL):  
             print ("You Pressed Key : %c "%(key))
+	
+def copyFile(key): #copies audio to sounds folder so vlc can access it
+    currentDir = keyToSoundDict
             
 if __name__ == '__main__':     #Program start from here
     print ("Program is starting ... ")
-
     
     root = Tk()
     root.wm_title('Soundboard')
     app = App(root)
-    root.mainloop()
+
+    keypadThread = Thread(target=loop)
 
     try:
-        loop()
+	keypadThread.start()
+        root.mainloop()
     except KeyboardInterrupt:  #When 'Ctrl+C' is pressed, exit the program. 
         GPIO.cleanup()
         root.quit()
