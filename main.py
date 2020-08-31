@@ -37,9 +37,9 @@ class App:
             self.keyToBtnDict[key].grid(row = y, column = x)
 
             self.keyToSoundStringVarDict[key] = StringVar()
-	    self.keyToSoundStringVarDict[key].set(keyToSoundDict[key])
-            
-            self.keyToLblDict[key] = Label(frame, textvariable = keyToSoundStringVarDict[key])
+            self.keyToSoundStringVarDict[key].set(keyToSoundDict[key])
+
+            self.keyToLblDict[key] = Label(frame, textvariable = self.keyToSoundStringVarDict[key])
             self.keyToLblDict[key].grid(row = y, column = x+1)  
                   
             x += 2
@@ -48,10 +48,9 @@ class App:
             x = 0 if temp!=y else x
 
     def getDirectory(self, key):
-        dir = askopenfilename(title = "select a mp3 file", filetypes = [("mp3 files", "*.mp3")])
-        keyToSoundDict[key] = dir if dir else 'N/A'
-	self.keyToSoundStringVarDict[key].set(keyToSoundDict[key])
- 
+        directory = askopenfilename(title = "select a mp3 file", filetypes = [("mp3 files", "*.mp3")])
+        keyToSoundDict[key] = directory if directory else 'N/A'
+        self.keyToSoundStringVarDict[key].set(keyToSoundDict[key])
 
 def loop():
     keypad = Keypad.Keypad(keys,rowsPins,colsPins,ROWS,COLS)  
@@ -63,12 +62,16 @@ def loop():
             
 if __name__ == '__main__':     #Program start from here
     print ("Program is starting ... ")
-    """try:
-        loop()
-    except KeyboardInterrupt:  #When 'Ctrl+C' is pressed, exit the program. 
-        GPIO.cleanup()"""
 
+    
     root = Tk()
     root.wm_title('Soundboard')
     app = App(root)
     root.mainloop()
+
+    try:
+        loop()
+    except KeyboardInterrupt:  #When 'Ctrl+C' is pressed, exit the program. 
+        GPIO.cleanup()
+        root.quit()
+
