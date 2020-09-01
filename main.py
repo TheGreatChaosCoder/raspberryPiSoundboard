@@ -2,7 +2,7 @@ import RPi.GPIO as GPIO
 from tkinter import *
 from tkinter.filedialog import *
 from functools import partial
-from threading import Thread
+import threading
 import Keypad
 
 
@@ -15,6 +15,8 @@ keys =  [   '1','2','3','A',
 rowsPins = [12,16,18,22]        #connect to the row pinouts of the keypad
 colsPins = [19,15,13,11]        #connect to the column pinouts of the keypad
 
+root = Tk()
+
 keyToSoundDict = {}
 
 for key in keys:
@@ -24,6 +26,7 @@ class App:
     global keyToSoundDict
 	
     def __init__(self, master):
+        self.master = master
         frame = Frame(master)
         frame.pack()
 
@@ -53,6 +56,9 @@ class App:
         keyToSoundDict[key] = directory if directory else 'N/A'
         self.keyToSoundStringVarDict[key].set(keyToSoundDict[key])
 
+    def report_callback_exception(self, exc, val, tb): #overrides tkinter's callback exception function
+        tkMessageBox.showerror("Exception", message=str(val))
+
 def loop():
     keypad = Keypad.Keypad(keys,rowsPins,colsPins,ROWS,COLS)  
     keypad.setDebounceTime(50)     
@@ -60,23 +66,26 @@ def loop():
         key = keypad.getKey()   
         if(key != keypad.NULL):  
             print ("You Pressed Key : %c "%(key))
-	
-def copyFile(key): #copies audio to sounds folder so vlc can access it
-    currentDir = keyToSoundDict
+
+def onClosing():
+    root.destroy()
             
 if __name__ == '__main__':     #Program start from here
     print ("Program is starting ... ")
     
-    root = Tk()
     root.wm_title('Soundboard')
     app = App(root)
 
-    keypadThread = Thread(target=loop)
+    keypadThread = threading.Thread(target=loop)
+
+    root.protocol("WM_DELETE_WINDOW", onClosing)
 
     try:
-	keypadThread.start()
+        keypadThread.start()
         root.mainloop()
-    except KeyboardInterrupt:  #When 'Ctrl+C' is pressed, exit the program. 
+    
+    except (KeyboardInterrupt, SystemExit):  #When 'Ctrl+C' is pressed, exit the program.
+        print("stopping app, closing threads")
+        keypadThread.join()
         GPIO.cleanup()
-        root.quit()
 
