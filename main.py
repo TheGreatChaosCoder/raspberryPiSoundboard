@@ -16,7 +16,23 @@ rowsPins = [12,16,18,22]        #connect to the row pinouts of the keypad
 colsPins = [19,15,13,11]        #connect to the column pinouts of the keypad
 
 root = Tk()
-keypadThread = threading.Thread(target=loop)
+appClosed = False
+
+def loop():
+    global appClosed
+    
+    keypad = Keypad.Keypad(keys,rowsPins,colsPins,ROWS,COLS)  
+    keypad.setDebounceTime(50)     
+    while(not appClosed):
+        key = keypad.getKey()   
+        if(key != keypad.NULL):  
+            print ("You Pressed Key : %c "%(key))
+
+def printThreads():
+    for thread in threading.enumerate():
+        print(thread.name + "\n")
+
+keypadThread = threading.Thread(name = "matrix keypad", target=loop)
 
 keyToSoundDict = {}
 
@@ -26,9 +42,9 @@ for key in keys:
 class App:
     global keyToSoundDict
     global keypadThread
+    global appClosed
 	
     def __init__(self, master):
-        self.master = master
         frame = Frame(master)
         frame.pack()
 
@@ -61,17 +77,14 @@ class App:
     def report_callback_exception(self, exc, val, tb): #overrides tkinter's callback exception function
         tkMessageBox.showerror("Exception", message=str(val))
 	
-    def onClosing():
-    	self.master.destroy()
-	keypadThread.join() #joins thread to main thread
-
-def loop():
-    keypad = Keypad.Keypad(keys,rowsPins,colsPins,ROWS,COLS)  
-    keypad.setDebounceTime(50)     
-    while(True):
-        key = keypad.getKey()   
-        if(key != keypad.NULL):  
-            print ("You Pressed Key : %c "%(key))
+    def onClosing(self):
+        print("i am also here")
+        appClosed = True
+        root.destroy()
+        keypadThread.join() #joins thread to main thread
+        printThreads()
+        GPIO.cleanup()
+        print("i am here")
             
 if __name__ == '__main__':     #Program start from here
     print ("Program is starting ... ")
@@ -79,14 +92,12 @@ if __name__ == '__main__':     #Program start from here
     root.wm_title('Soundboard')
     app = App(root)
 
-    root.protocol("WM_DELETE_WINDOW", app.onClosing)
+    root.wm_protocol("WM_DELETE_WINDOW", app.onClosing)
 
-    try:
-        keypadThread.start()
-        root.mainloop()
-    
-    except (KeyboardInterrupt, SystemExit):  #When 'Ctrl+C' is pressed, exit the program.
-        print("stopping app, closing threads")
-        keypadThread.join()
-        GPIO.cleanup()
+    keypadThread.start()
+    root.mainloop()
+
+    print("stopping app, closing threads")
+    #keypadThread.join()
+    GPIO.cleanup()
 
