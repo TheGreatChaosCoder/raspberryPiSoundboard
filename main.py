@@ -16,6 +16,7 @@ rowsPins = [12,16,18,22]        #connect to the row pinouts of the keypad
 colsPins = [19,15,13,11]        #connect to the column pinouts of the keypad
 
 root = Tk()
+keypadThread = threading.Thread(target=loop)
 
 keyToSoundDict = {}
 
@@ -24,6 +25,7 @@ for key in keys:
 
 class App:
     global keyToSoundDict
+    global keypadThread
 	
     def __init__(self, master):
         self.master = master
@@ -58,6 +60,10 @@ class App:
 
     def report_callback_exception(self, exc, val, tb): #overrides tkinter's callback exception function
         tkMessageBox.showerror("Exception", message=str(val))
+	
+    def onClosing():
+    	self.master.destroy()
+	keypadThread.join() #joins thread to main thread
 
 def loop():
     keypad = Keypad.Keypad(keys,rowsPins,colsPins,ROWS,COLS)  
@@ -66,9 +72,6 @@ def loop():
         key = keypad.getKey()   
         if(key != keypad.NULL):  
             print ("You Pressed Key : %c "%(key))
-
-def onClosing():
-    root.destroy()
             
 if __name__ == '__main__':     #Program start from here
     print ("Program is starting ... ")
@@ -76,9 +79,7 @@ if __name__ == '__main__':     #Program start from here
     root.wm_title('Soundboard')
     app = App(root)
 
-    keypadThread = threading.Thread(target=loop)
-
-    root.protocol("WM_DELETE_WINDOW", onClosing)
+    root.protocol("WM_DELETE_WINDOW", app.onClosing)
 
     try:
         keypadThread.start()
