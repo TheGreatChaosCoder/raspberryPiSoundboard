@@ -23,6 +23,8 @@ def loop():
     if(key != keypad.NULL):  
     	print ("You Pressed Key : %c "%(key))
 
+    root.after(10, loop) #loops the function onto itself, does not cause a infinite recursion error
+
 def printThreads():
     for thread in threading.enumerate():
         print(thread.name + "\n")
@@ -70,13 +72,9 @@ class App:
         tkMessageBox.showerror("Exception", message=str(val))
 	
     def onClosing(self):
-        print("i am also here")
         root.destroy()
-        printThreads()
         GPIO.cleanup()
-        print("i am here")
-	sys.exit()
-            
+      
 if __name__ == '__main__':     #Program start from here
     print ("Program is starting ... ")
     
@@ -86,6 +84,3 @@ if __name__ == '__main__':     #Program start from here
     root.wm_protocol("WM_DELETE_WINDOW", app.onClosing)
     root.after(10, loop)
     root.mainloop()
-
-    print("stopping app, closing threads")
-    GPIO.cleanup()
