@@ -5,7 +5,6 @@ from functools import partial
 import threading
 import Keypad
 
-
 ROWS = 4    
 COLS = 4 
 keys =  [   '1','2','3','A',  
@@ -16,23 +15,17 @@ rowsPins = [12,16,18,22]        #connect to the row pinouts of the keypad
 colsPins = [19,15,13,11]        #connect to the column pinouts of the keypad
 
 root = Tk()
-appClosed = False
 
 def loop():
-    global appClosed
-    
     keypad = Keypad.Keypad(keys,rowsPins,colsPins,ROWS,COLS)  
     keypad.setDebounceTime(50)     
-    while(not appClosed):
-        key = keypad.getKey()   
-        if(key != keypad.NULL):  
-            print ("You Pressed Key : %c "%(key))
+    key = keypad.getKey()   
+    if(key != keypad.NULL):  
+    	print ("You Pressed Key : %c "%(key))
 
 def printThreads():
     for thread in threading.enumerate():
         print(thread.name + "\n")
-
-keypadThread = threading.Thread(name = "matrix keypad", target=loop)
 
 keyToSoundDict = {}
 
@@ -41,7 +34,6 @@ for key in keys:
 
 class App:
     global keyToSoundDict
-    global keypadThread
     global appClosed
 	
     def __init__(self, master):
@@ -79,12 +71,11 @@ class App:
 	
     def onClosing(self):
         print("i am also here")
-        appClosed = True
         root.destroy()
-        keypadThread.join() #joins thread to main thread
         printThreads()
         GPIO.cleanup()
         print("i am here")
+	sys.exit()
             
 if __name__ == '__main__':     #Program start from here
     print ("Program is starting ... ")
@@ -93,11 +84,8 @@ if __name__ == '__main__':     #Program start from here
     app = App(root)
 
     root.wm_protocol("WM_DELETE_WINDOW", app.onClosing)
-
-    keypadThread.start()
+    root.after(10, loop)
     root.mainloop()
 
     print("stopping app, closing threads")
-    #keypadThread.join()
     GPIO.cleanup()
-
