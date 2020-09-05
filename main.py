@@ -4,6 +4,7 @@ from tkinter.filedialog import *
 from functools import partial
 import threading
 import Keypad
+import vlcSoundboard
 
 ROWS = 4    
 COLS = 4 
@@ -13,6 +14,19 @@ keys =  [   '1','2','3','A',
             '*','0','#','D'     ]
 rowsPins = [12,16,18,22]        #connect to the row pinouts of the keypad
 colsPins = [19,15,13,11]        #connect to the column pinouts of the keypad
+stopButton = 'A' #the letter that will act as a 'stop player' button
+
+soundFolderDir = "/sounds"
+soundboard = vlcSoundboard.Soundboard(soundFolderDir)
+
+#declaring dict that will contain the directories to the sound files when the buttons are pressed
+keyToSoundDict = {}
+
+for key in keys:
+    if (key is not 'A'):
+	keyToSoundDict[key] = "N/A"
+    else:
+	keyToSoundDict[key] = "Stop"
 
 root = Tk()
 
@@ -22,17 +36,16 @@ def loop():
     key = keypad.getKey()   
     if(key != keypad.NULL):  
     	print ("You Pressed Key : %c "%(key))
-
+	sound = keyToSoundDict[key]
+	if (key is not stopButton and sound is not "N/A"):
+	    soundboard.playSound(sound)
+	elif(key == stopButton):
+	    soundboard.stopPlayer()
     root.after(10, loop) #loops the function onto itself, does not cause a infinite recursion error
 
 def printThreads():
     for thread in threading.enumerate():
         print(thread.name + "\n")
-
-keyToSoundDict = {}
-
-for key in keys:
-    keyToSoundDict[key] = "N/A"
 
 class App:
     global keyToSoundDict
@@ -45,18 +58,27 @@ class App:
         self.keyToSoundStringVarDict = {}
         self.keyToBtnDict = {}
         self.keyToLblDict = {}
+	self.
         x = 0 #horizontal pos on grid
         y = 0 #vertical pos on grid
 
         for key in keys:
-            self.keyToBtnDict[key] = Button(frame, text="Btn " + key, command = partial(self.getDirectory, key))
-            self.keyToBtnDict[key].grid(row = y, column = x)
+	    if (key is not stopButton):
+		
+                self.keyToBtnDict[key] = Button(frame, text="Btn " + key, command = partial(self.getDirectory, key))
+                self.keyToBtnDict[key].grid(row = y, column = x)
 
-            self.keyToSoundStringVarDict[key] = StringVar()
-            self.keyToSoundStringVarDict[key].set(keyToSoundDict[key])
+                self.keyToSoundStringVarDict[key] = StringVar()
+                self.keyToSoundStringVarDict[key].set(keyToSoundDict[key])
 
-            self.keyToLblDict[key] = Label(frame, textvariable = self.keyToSoundStringVarDict[key])
-            self.keyToLblDict[key].grid(row = y, column = x+1)  
+                self.keyToLblDict[key] = Label(frame, textvariable = self.keyToSoundStringVarDict[key])
+                self.keyToLblDict[key].grid(row = y, column = x+1)
+            else:
+		self.keyToLblDict[key] = []
+		self.keyToLblDict[key][0] = Label(frame, text = "Btn " + key)
+		self.keyToLblDict[key][0].grid(row = y, column = x)
+		self.keyToLblDict[key][1] = Label(frame, text = keyToSoundDict[key])
+		self.keyToLblDict[key][1].grid(row = y, column = x+1)
                   
             x += 2
             temp = y
