@@ -24,9 +24,9 @@ keyToSoundDict = {}
 
 for key in keys:
     if (key is not 'A'):
-	keyToSoundDict[key] = "N/A"
+        keyToSoundDict[key] = "N/A"
     else:
-	keyToSoundDict[key] = "Stop"
+        keyToSoundDict[key] = "Stop"
 
 root = Tk()
 
@@ -34,13 +34,14 @@ def loop():
     keypad = Keypad.Keypad(keys,rowsPins,colsPins,ROWS,COLS)  
     keypad.setDebounceTime(50)     
     key = keypad.getKey()   
-    if(key != keypad.NULL):  
-    	print ("You Pressed Key : %c "%(key))
-	sound = keyToSoundDict[key]
-	if (key is not stopButton and sound is not "N/A"):
-	    soundboard.playSound(sound)
-	elif(key == stopButton):
-	    soundboard.stopPlayer()
+    if (key != keypad.NULL):  
+        print ("You Pressed Key : %c "%(key))
+        sound = keyToSoundDict[key]
+        
+        if (key != stopButton and sound != "N/A"):
+            soundboard.playSound(sound)
+        elif(key == stopButton):
+            soundboard.stopPlayer()
     root.after(10, loop) #loops the function onto itself, does not cause a infinite recursion error
 
 def printThreads():
@@ -58,12 +59,11 @@ class App:
         self.keyToSoundStringVarDict = {}
         self.keyToBtnDict = {}
         self.keyToLblDict = {}
-	self.
         x = 0 #horizontal pos on grid
         y = 0 #vertical pos on grid
 
         for key in keys:
-	    if (key is not stopButton):
+            if (key is not stopButton):
 		
                 self.keyToBtnDict[key] = Button(frame, text="Btn " + key, command = partial(self.getDirectory, key))
                 self.keyToBtnDict[key].grid(row = y, column = x)
@@ -74,11 +74,11 @@ class App:
                 self.keyToLblDict[key] = Label(frame, textvariable = self.keyToSoundStringVarDict[key])
                 self.keyToLblDict[key].grid(row = y, column = x+1)
             else:
-		self.keyToLblDict[key] = []
-		self.keyToLblDict[key][0] = Label(frame, text = "Btn " + key)
-		self.keyToLblDict[key][0].grid(row = y, column = x)
-		self.keyToLblDict[key][1] = Label(frame, text = keyToSoundDict[key])
-		self.keyToLblDict[key][1].grid(row = y, column = x+1)
+                self.keyToLblDict[key] = [None] * 2
+                self.keyToLblDict[key][0] = Label(frame, text = "Btn " + key)
+                self.keyToLblDict[key][0].grid(row = y, column = x)
+                self.keyToLblDict[key][1] = Label(frame, text = keyToSoundDict[key])
+                self.keyToLblDict[key][1].grid(row = y, column = x+1)
                   
             x += 2
             temp = y

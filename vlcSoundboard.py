@@ -13,7 +13,7 @@ class Soundboard:
     def stopPlayer(self):
         player.stop()
 
-    def playSound(self. soundName):
+    def playSound(self, soundName):
         soundFileDir = self.soundFolderDir + "/" + soundName + ".mp3"
         player.set_media(vlcInstance.media_new_path(soundFileDir))
         player.play()
