@@ -2,6 +2,7 @@ import RPi.GPIO as GPIO
 from tkinter import *
 from tkinter.filedialog import *
 from functools import partial
+import os
 import threading
 import Keypad
 import vlcSoundboard
@@ -47,6 +48,15 @@ def loop():
 def printThreads():
     for thread in threading.enumerate():
         print(thread.name + "\n")
+	
+def incwd(directory):
+	return os.getcwd() in directory
+	
+def getRelativePath(directory):
+	relativeDir = directory
+	if (incwd(directory)):
+		relativeDir = relativeDir.replace(os.getcwd(), '')
+	return relativeDir
 
 class App:
     global keyToSoundDict
@@ -87,8 +97,15 @@ class App:
 
     def getDirectory(self, key):
         directory = askopenfilename(title = "select a mp3 file", filetypes = [("mp3 files", "*.mp3")])
-        keyToSoundDict[key] = directory if directory else 'N/A'
-        self.keyToSoundStringVarDict[key].set(keyToSoundDict[key])
+	if (directory and incwd(directory)):
+        	keyToSoundDict[key] = getRelativePath(directory)
+        	self.keyToSoundStringVarDict[key].set(keyToSoundDict[key])
+	elif incwd(directory):
+		messagebox.showwarning(title = "Invaild Response", message = "File has to be in the 'sounds' folder")
+		self.getDirectory(key)
+	else:
+		keyToSoundDict[key] = 'N/A'
+		self.keyToSoundStringVarDict[key].set(keyToSoundDict[key])
 
     def report_callback_exception(self, exc, val, tb): #overrides tkinter's callback exception function
         tkMessageBox.showerror("Exception", message=str(val))
