@@ -12,9 +12,11 @@ class Soundboard:
 
     def stopPlayer(self):
         player.stop()
+        #player.set_media(vlcInstance.media_new_path(None)) #removes old media
 
     def playSound(self, soundName):
-        soundFileDir = self.soundFolderDir + "/" + soundName + ".mp3"
+        soundFileDir = self.soundFolderDir + "/" + soundName
+        print(player.get_media())
         player.set_media(vlcInstance.media_new_path(soundFileDir))
         player.play()
                 

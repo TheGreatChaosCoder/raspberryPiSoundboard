@@ -17,8 +17,9 @@ rowsPins = [12,16,18,22]        #connect to the row pinouts of the keypad
 colsPins = [19,15,13,11]        #connect to the column pinouts of the keypad
 stopButton = 'A' #the letter that will act as a 'stop player' button
 
-soundFolderDir = "/sounds"
-soundboard = vlcSoundboard.Soundboard(soundFolderDir)
+soundFolder = "/sounds"
+soundFolderDir = "raspberryPiSoundboard/" + soundFolder
+soundboard = vlcSoundboard.Soundboard(soundFolder.replace("/", '')) #vlc doesnt like the slah at the front
 
 #declaring dict that will contain the directories to the sound files when the buttons are pressed
 keyToSoundDict = {}
@@ -49,14 +50,15 @@ def printThreads():
     for thread in threading.enumerate():
         print(thread.name + "\n")
 	
-def incwd(directory):
-	return os.getcwd() in directory
+def inSoundFolder(directory):
+	return os.getcwd()+soundFolder in directory
 	
-def getRelativePath(directory):
-	relativeDir = directory
-	if (incwd(directory)):
-		relativeDir = relativeDir.replace(os.getcwd(), '')
-	return relativeDir
+def getFileName(directory):
+	file = directory
+	if (inSoundFolder(file)):
+            soundFolderAbsDir = os.getcwd() + soundFolder
+            file = file.replace(soundFolderAbsDir + "/", '')
+	return file
 
 class App:
     global keyToSoundDict
@@ -97,15 +99,15 @@ class App:
 
     def getDirectory(self, key):
         directory = askopenfilename(title = "select a mp3 file", filetypes = [("mp3 files", "*.mp3")])
-	if (directory and incwd(directory)):
-        	keyToSoundDict[key] = getRelativePath(directory)
+        if (directory and inSoundFolder(directory)):
+        	keyToSoundDict[key] = getFileName(directory)
         	self.keyToSoundStringVarDict[key].set(keyToSoundDict[key])
-	elif incwd(directory):
-		messagebox.showwarning(title = "Invaild Response", message = "File has to be in the 'sounds' folder")
-		self.getDirectory(key)
-	else:
-		keyToSoundDict[key] = 'N/A'
-		self.keyToSoundStringVarDict[key].set(keyToSoundDict[key])
+        elif inSoundFolder(directory):
+                messagebox.showwarning(title = "Invaild Response", message = "File has to be in the 'sounds' folder")
+                self.getDirectory(key)
+        else:
+                keyToSoundDict[key] = 'N/A'
+                self.keyToSoundStringVarDict[key].set(keyToSoundDict[key])
 
     def report_callback_exception(self, exc, val, tb): #overrides tkinter's callback exception function
         tkMessageBox.showerror("Exception", message=str(val))
